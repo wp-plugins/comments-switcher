@@ -1,0 +1,126 @@
+/*
+ * @package Comments Switcher 0.2
+ * Plugin URI: http://web-argument.com/wordpress-comments-switcher/
+ *
+**/
+
+#fb_form, #guest_form {
+	background-color:#DDD;
+	padding:10px;	
+}
+
+#fb_form {
+	display:none;
+}
+
+#csw_links {
+	overflow:hidden;
+	list-style:none;
+	margin:0 !important;
+}
+
+#csw_links li{
+	list-style:none;;
+	float:left;
+	padding:5px;
+	-webkit-border-radius: 5px 5px 0px 0px;
+	-moz-border-radius: 5px 5px 0px 0px;
+	border-radius: 5px 5px 0px 0px;
+}
+
+#csw_links li.active{
+	background-color:#DDD;
+}
+
+
+#csw_links a{	
+	height: 22px;
+	line-height: 22px !important;
+	font-family: Arial, Helvetica, Tahoma, Verdana, sans-serif !important;
+	font-size: 12px !important;
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);	
+	font-weight: normal;
+	letter-spacing: 0;
+	color: white !important;
+	cursor: pointer;
+	display: block;
+	overflow: hidden;
+	height: 24px;
+	text-decoration:none;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+#fb_login {
+	background:#5E76AB url(images/login-icons.png) no-repeat 4px 4px;
+	width:152px;
+	border:1px solid #5E76AB;
+	}
+	
+#guest_login {
+	background:#AAAAAA url(images/login-icons.png) no-repeat 3px -45px;
+	width:80px;
+	border:1px solid #888;
+	}
+		
+#fb_login span, #guest_login span{
+	margin-left: 20px;
+	display:block;
+	border-left:solid 1px #CCC;	
+	padding-left:10px;		
+}
+
+#fb_login span{
+	float:left;
+	width:98px;
+}
+#fb_feed_post {
+	width:30px !important;
+}
+
+#cancel-comment-reply{
+	padding:0 10px;
+	background-color:#DDD;
+}
+
+.comment-author .comment-meta{
+	margin-left:10px;
+}
+
+#fb_info{
+	overflow:hidden;
+	clear:both;
+	margin-bottom:10px;
+}
+
+.fb_login_status {
+	font-style:italic;
+	font-size:11px;
+}
+
+img.fb_pic {
+	border:solid 4px #FFF;
+	float:left;
+}
+
+#fb_form img.fb_pic {
+	margin-right:10px !important;
+}
+
+.fb_input_error{
+	border:solid 1px #FF0000 !important;
+}
+
+.fb_uid_error{
+	color:#FF0000;
+}
+
+.fb_status_img {
+	float:left;
+	padding-top:6px;
+	display:none;
+}
+	
+	
+	
