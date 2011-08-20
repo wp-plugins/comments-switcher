@@ -10,7 +10,7 @@ Allows users to comment on your blog using the facebook credentials or the defau
 
 == Description ==
 
-The plugin replace your comment form and includes one that also allows to use the facebook credentials. 
+The plugin replaces your comment form and includes one that also allows to use the facebook credentials. 
 
 Special Features:
 
