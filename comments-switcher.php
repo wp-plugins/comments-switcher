@@ -261,7 +261,7 @@ function csw_options_page() {
         <td align="right" valign="top"><strong><?php _e("Facebook Feed") ?></strong></td>        
         <td>
 			<input name="fb_feed_allow_post" type="checkbox" value="1" <?php if ($fb_feed_allow_post == "1") echo "checked = \"checked\"" ?> /> 
-            <em><?php _e(' Check if you want to include the option "Post notification on my Wall"') ?></em>
+            <em><?php _e(' Check if you want to include the option "Post notification to my Wall"') ?></em>
         </td>
       </tr>
     </table>

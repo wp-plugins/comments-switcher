@@ -148,7 +148,7 @@ if ($options['fb_apid'] == ''){ ?>
 <p><textarea name="comment" id="comment" cols="58" rows="10" tabindex="4" class="req"></textarea></p>
 
 <?php if ($options['fb_feed_allow_post']) { ?>
-<p><input name="fb_feed" type="checkbox" value="1" checked  id="fb_feed_post"/><label for="url"><small><?php _e('Post notification on my Wall'); ?></small></label></p>
+<p><input name="fb_feed" type="checkbox" value="1" checked  id="fb_feed_post"/><label for="url"><small><?php _e('Post notification to my Wall'); ?></small></label></p>
 <?php } ?>
 
 <p><input name="submit_btn" type="button" id="fb_submit" tabindex="5" value="<?php _e('Submit Comment'); ?>" />
