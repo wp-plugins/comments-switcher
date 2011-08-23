@@ -1,5 +1,5 @@
 /*
- * @package Comments Switcher 0.2
+ * @package Comments Switcher 0.2.1
  * Plugin URI: http://web-argument.com/wordpress-comments-switcher/
  *
 **/
@@ -86,8 +86,9 @@ WPCSwitcher = {
 				   }
 				},
 				
-				LoginAction : function(e){
+				LoginAction : function(){
 					
+					WPCSwitcher.IdleStatus("show");
 					if (WPCSwitcher.UserInfo.fuid == ""){
 						FB.login(function(response){										
 							if(response.authResponse && response.status == "connected"){
@@ -147,7 +148,7 @@ WPCSwitcher = {
 					
 					if(valid) {
 						if($("#fb_feed_post").is(":checked")) WPCSwitcher.GraphStreamPublish.Post();
-						else WPCSwitcher.Submit();							
+						else WPCSwitcher.GraphStreamPublishApp.Post();							
 					} else {
 						WPCSwitcher.IdleStatus("hide");
 						return false;
@@ -180,9 +181,23 @@ WPCSwitcher = {
 				},
 								
 				GraphStreamPublish : {					
-					Body : "",
+					Body : {},
 					Post : function (){
 						FB.api('/me/feed', 'post',this.Body, function(response) {
+							if (!response || response.error) {
+								alert('Error occured');
+							} else {
+								WPCSwitcher.GraphStreamPublishApp.Post();
+							}
+						});
+					
+					}
+				},
+				
+				GraphStreamPublishApp : {					
+					Body : {},
+					Post : function (){
+						FB.api('/'+WPCSwitcher.Settings.appId+'/feed', 'post',this.Body, function(response) {
 							if (!response || response.error) {
 								alert('Error occured');
 							} else {
@@ -191,15 +206,14 @@ WPCSwitcher = {
 						});
 					
 					}
-				},
+				},				
 				
 				Submit : function(){				
 					$("#fbcommentform").submit();					
 				},
 				
 				UpdateUserInfo : function(){
-					
-					  WPCSwitcher.IdleStatus("show");
+
 					  FB.api('/me', function(response) {
 							   var query = FB.Data.query('select name, pic_square, email from user where uid={0}', response.id);
 							   query.wait(function(rows) {
@@ -281,7 +295,7 @@ WPCSwitcher = {
 					 var fb_status_img = $(".fb_status_img");
 					 fb_status_img[status]();
 				 }
-		  }
+		  };
 		  
 $(document).ready(function(){
 									

@@ -3,10 +3,13 @@
 Plugin Name: Comments Switcher
 Plugin URI: http://web-argument.com/wordpress-comments-switcher/
 Description: Allows users to comment on your blog using the <strong>facebook credentials</strong>. Go to your <a href="options-general.php?page=comments-switcher">Comments Switcher Configuration</a> page, and save your Facebook APP ID.
-Version: 0.2
+Version: 0.2.1
 Author: Alain Gonzalez
 Author URI: http://web-argument.com/
 */
+
+define('CSW_VERSION_CURRENT','0.2.1');
+define('CSW_VERSION_CHECK','0.2.1');
 
 define('CSW_PLUGIN_DIR', WP_PLUGIN_DIR."/".dirname(plugin_basename(__FILE__)));
 define('CSW_PLUGIN_URL', WP_PLUGIN_URL."/".dirname(plugin_basename(__FILE__)));
@@ -38,10 +41,11 @@ add_filter('comment_cookie_lifetime', 'csw_comment_cookie_lifetime',10,1);
 
 function csw_comment_cookie_lifetime($lifetime){
 	if ($_POST["fb_uid"] && $_POST["fb_uid"] != "") {
-		$lifetime = -1;
+		$lifetime = - 3600;
 	}
 	return $lifetime;
 }
+
 
 add_filter('get_avatar','csw_get_fb_pic',10,5);
 
@@ -76,13 +80,11 @@ function csw_head() {
 	if (is_single() || is_page()){
 	
 		$options = get_csw_options();
-		
-		wp_enqueue_script( 'facebook-comment-switcher', CSW_PLUGIN_URL . '/js/wpcwitcher.js',array( 'jquery' ));
-		
+	
 		$csw_header =  "\n<!-- Comments Switcher -->\n";
 		$csw_header .= "<script type='text/javascript'>\n";	
 		$csw_header .= "window.fbAsyncInit = function() {\n";	
-		$csw_header .= "WPCSwitcher.GraphStreamPublish.Body = ".csw_fb_feed_generate().";\n";	
+		$csw_header .= "WPCSwitcher.GraphStreamPublish.Body = WPCSwitcher.GraphStreamPublishApp.Body = ".csw_fb_feed_generate().";\n";	
 		$csw_header .= "WPCSwitcher.Init({appId:'".$options['fb_apid']."'});\n";	
 		$csw_header .= "}\n";	
 		$csw_header .= "</script>\n";
@@ -96,7 +98,7 @@ function csw_head() {
 
 add_action('wp_head', 'csw_head');
 
-wp_enqueue_script( 'comments-switcher', CSW_PLUGIN_URL . '/js/comments-switcher.0.2.js',array( 'jquery' ));
+wp_enqueue_script( 'comments-switcher',CSW_PLUGIN_URL.'/js/comments-switcher.0.2.1.min.js',array( 'jquery' ));
 
 
 if ( ! function_exists( 'csw_comment' ) ) :
@@ -163,8 +165,10 @@ function get_csw_options ($default = false){
 							'fb_feed_message'=>__('commented on %blog_name%'),
 							'fb_feed_link'=>'%post_url%',
 							'fb_feed_name'=>'%post_title%',
+							'fb_feed_picture'=>'%post_thumbnail%',
 							'fb_feed_caption'=>'%blog_description%',
-							'fb_feed_description'=>'%post_excerpt%'
+							'fb_feed_description'=>'%post_excerpt%',
+							'version'=>CSW_VERSION_CURRENT
 							);							
     	
 	if ($default) {
@@ -172,12 +176,23 @@ function get_csw_options ($default = false){
 	return $csw_default;
 	}
 	
-	$options = get_option('csw_op');	
+	$options = get_option('csw_op');
+	$fb_apid = '';
+	if (isset($options['fb_apid'])) $fb_apid = $options['fb_apid'];
 	
-	if (empty($options)) {
-		 $options = $csw_default;
-	}
-	
+	if (isset($options)){
+	    if (isset($options['version'])) {
+			$chk_version = version_compare(CSW_VERSION_CHECK,$options['version']);
+			if ($chk_version == 0) 	return $options;
+			else if ($chk_version > 0) $options = $csw_default;
+        } else {
+		$options = $csw_default;
+		}
+	} else {
+		$options = $csw_default;
+	}	
+	if ($fb_apid != "") $options['fb_apid'] = $fb_apid;
+	update_option('csw_op', $options);
 	return $options;
 }
 
@@ -219,9 +234,11 @@ function csw_options_page() {
 			$newoptions['fb_feed_message'] = isset($_POST['fb_feed_message'])?$_POST['fb_feed_message']:$options['fb_feed_message'];
 			$newoptions['fb_feed_link'] = isset($_POST['fb_feed_link'])?$_POST['fb_feed_link']:$options['fb_feed_link'];			
 			$newoptions['fb_feed_name'] = isset($_POST['fb_feed_name'])?$_POST['fb_feed_name']:$options['fb_feed_name'];
-			$newoptions['fb_feed_caption'] = isset($_POST['fb_feed_caption'])?$_POST['fb_feed_caption']:$options['fb_feed_caption'];		
+			$newoptions['fb_feed_caption'] = isset($_POST['fb_feed_caption'])?$_POST['fb_feed_caption']:$options['fb_feed_caption'];	
+			$newoptions['fb_feed_picture'] = isset($_POST['fb_feed_picture'])?$_POST['fb_feed_picture']:$options['fb_feed_picture'];		
 			$newoptions['fb_feed_description'] = isset($_POST['fb_feed_description'])?$_POST['fb_feed_description']:$options['fb_feed_description'];
 
+			$newoptions['version'] = $options['version'];
 
 			if ( $options != $newoptions ) {
 				$options = $newoptions;
@@ -239,6 +256,7 @@ function csw_options_page() {
 	$fb_feed_link = $options['fb_feed_link'];	
 	$fb_feed_name = $options['fb_feed_name'];
 	$fb_feed_caption = $options['fb_feed_caption'];
+	$fb_feed_picture = $options['fb_feed_picture'];
 	$fb_feed_description = $options['fb_feed_description'];
 	
 	?>  
@@ -288,6 +306,10 @@ function csw_options_page() {
                     <td><textarea name="fb_feed_caption" cols="30" rows="2"><?php echo $fb_feed_caption ?></textarea></td>
                   </tr>
                   <tr>
+                    <td align="right"><?php _e("Picture") ?></td>
+                    <td><textarea name="fb_feed_picture" cols="30" rows="2"><?php echo $fb_feed_picture ?></textarea></td>
+                  </tr>                  
+                  <tr>
                     <td align="right"><?php _e("Description") ?></td>
                     <td><textarea name="fb_feed_description" cols="30" rows="2"><?php echo $fb_feed_description ?></textarea></td>
                   </tr> 
@@ -315,6 +337,10 @@ function csw_options_page() {
                     <td><em><?php _e("Post Title") ?></em></td>
                   </tr> 
                   <tr>
+                    <td align="right">%post_thumbnail%</td>
+                    <td><em><?php _e("Post Thumbnail") ?></em></td>
+                  </tr>                   
+                  <tr>
                     <td align="right">%post_excerpt%</td>
                     <td><em><?php _e("Post Excerpt") ?></em></td>
                   </tr>
@@ -339,32 +365,27 @@ function csw_options_page() {
     </p>
     </form>
     </div>
-
-<?php }  
+    
+<?php 
+} 
+  
 
 /**
  * Feed generator
  */  
 
 function csw_fb_feed_generate(){
-	
+	global $post;
 	$options = get_csw_options();
 	
 	$fb_feed_args = "{";	
-	$fb_feed_args .= "message: '".csw_args_cleaner($options['fb_feed_message'])."',";						                             
-	$fb_feed_args .= "link:'".csw_args_cleaner($options['fb_feed_link'])."',";
-	$fb_feed_args .= "name:'".csw_args_cleaner($options['fb_feed_name'])."',";
-	$fb_feed_args .= "caption:'".csw_args_cleaner($options['fb_feed_caption'])."',";
-	$fb_feed_args .= "description:'".csw_args_cleaner($options['fb_feed_description'])."'";						
+	$fb_feed_args .= "message: '".csw_args_pre_cleaner($options['fb_feed_message'])."',";						                             
+	$fb_feed_args .= "link:'".csw_args_pre_cleaner($options['fb_feed_link'])."',";
+	$fb_feed_args .= "name:'".csw_args_pre_cleaner($options['fb_feed_name'])."',";
+	$fb_feed_args .= "caption:'".csw_args_pre_cleaner($options['fb_feed_caption'])."',";
+	$fb_feed_args .= "picture:'".csw_args_pre_cleaner($options['fb_feed_picture'])."',";
+	$fb_feed_args .= "description:'".csw_args_pre_cleaner($options['fb_feed_description'])."'";						
 	$fb_feed_args .= "}";
-	
-	return $fb_feed_args;
-	
-}
-
-function csw_args_cleaner($arg){
-	
-	global $post;
 	
 	$blog_name = get_bloginfo('name');
 	$blog_description = get_bloginfo('description');
@@ -372,11 +393,49 @@ function csw_args_cleaner($arg){
 	$post_title = $post->post_title;
 	$post_excerpt = $post->post_excerpt;
 	$post_url = get_permalink($post->ID);
+	$post_thumbnail = csw_post_img($post->ID);
 	
-	$find = array("%blog_name%","%blog_description%","%blog_url%","%post_title%","%post_excerpt%","%post_url%","\f","\v","\t","\r","\n","\\","\"");
-	$replace  = array($blog_name,$blog_description,$blog_url,$post_title,$post_excerpt,$post_url,"","","","","","","'");
+	$find = array("%blog_name%","%blog_description%","%blog_url%","%post_title%","%post_excerpt%","%post_url%","%post_thumbnail%");
+	$replace  = array($blog_name,$blog_description,$blog_url,$post_title,$post_excerpt,$post_url,$post_thumbnail);
+	
+	$cleaned = str_replace( $find,$replace, $fb_feed_args);	
+	
+	return $cleaned;
+	
+}
+
+function csw_args_pre_cleaner($arg){
+	
+	$find = array("\f","\v","\t","\r","\n","\\","\"","'");
+	$replace  = array("","","","","","","","");
 	
 	$cleaned = str_replace( $find,$replace, $arg);	
 	
 	return $cleaned;
+}
+
+/**
+ * Get the thumbnail from post
+ */
+function csw_post_img($the_parent,$size = 'thumbnail'){
+	
+	if( function_exists('has_post_thumbnail') && has_post_thumbnail($the_parent)) {
+	    $thumbnail_id = get_post_thumbnail_id( $the_parent );
+		if(!empty($thumbnail_id))
+		$img = wp_get_attachment_image_src( $thumbnail_id, $size );	
+	} else {
+	$attachments = get_children( array(
+										'post_parent' => $the_parent, 
+										'post_type' => 'attachment', 
+										'post_mime_type' => 'image',
+										'orderby' => 'menu_order', 
+										'order' => 'ASC', 
+										'numberposts' => 1) );
+	if($attachments == true) :
+		foreach($attachments as $id => $attachment) :
+			$img = wp_get_attachment_image_src($id, $size);			
+		endforeach;		
+	endif;
+	}
+	if (isset($img[0])) return $img[0]; 
 }
